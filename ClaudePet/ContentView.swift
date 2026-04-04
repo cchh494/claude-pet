@@ -83,6 +83,10 @@ struct ContentView: View {
     // 인터랙션 애니메이션
     @State private var pressScale: CGFloat = 1.0        // 살짝 누름 스케일 효과
     @State private var shakeOffset: CGFloat = 0         // 세게 누름 좌우 흔들기 오프셋
+    @State private var heartOpacity: Double = 0
+    @State private var heartYOffset: CGFloat = 0
+    @State private var heartScale: CGFloat = 0.85
+    @State private var heartEffectID: Int = 0
 
     // (더블탭 감지 제거됨 — 우클릭으로 Jumping 이동)
 
@@ -95,10 +99,10 @@ struct ContentView: View {
     // MARK: - View Body
     var body: some View {
         GeometryReader { geo in
-            // 창 크기에 맞게 자동 스케일 — ClaudePetApp.swift의 spriteScale이 여기에 반영됨
-            let displaySize = min(geo.size.width, geo.size.height)
+            // 창 너비를 기준으로 스프라이트 크기를 유지하고, 위쪽은 이펙트용 여백으로 사용
+            let displaySize = geo.size.width
 
-            ZStack {
+            ZStack(alignment: .bottom) {
                 Color.clear
 
                 Image(imageName)
@@ -116,11 +120,21 @@ struct ContentView: View {
                     .scaleEffect(pressScale)          // 살짝 누름 — 눌린 느낌 스케일
                     .offset(x: shakeOffset)           // 세게 누름 — 좌우 흔들기
 
+                Image("Emoji_Heart")
+                    .resizable()
+                    .interpolation(.none)
+                    .frame(width: displaySize * 0.24, height: displaySize * 0.24)
+                    .offset(y: -(displaySize * 0.46) + heartYOffset)
+                    .scaleEffect(heartScale)
+                    .opacity(heartOpacity)
+                    .allowsHitTesting(false)
+
                 // Force Touch 감지 오버레이
                 // 살짝 누름(일반 클릭)        → Idle_Smile
                 // 세게 누름(Force Click)      → Idle_Touch
                 // 우클릭(두 손가락 클릭)       → Idle_Jumping
                 InteractionOverlay(
+                    activeHeight: displaySize,
                     onLightPress: { _ in handleTap() },
                     onForcePress: { isLeftHalf in handleForcePress(isLeftHalf: isLeftHalf) },
                     onRightClick: { handleRightClick() }
@@ -214,6 +228,7 @@ struct ContentView: View {
 
         triggerHaptic()
         applyPressScale()
+        triggerHeartEffect()
         switchAnimation(to: .idleSmile)
     }
 
@@ -243,6 +258,39 @@ struct ContentView: View {
             withAnimation(.spring(response: 0.25, dampingFraction: 0.45)) {
                 pressScale = 1.0
             }
+        }
+    }
+
+    private func triggerHeartEffect() {
+        heartEffectID += 1
+        let effectID = heartEffectID
+
+        heartOpacity = 0
+        heartYOffset = 10
+        heartScale = 0.8
+
+        withAnimation(.easeOut(duration: 0.16)) {
+            heartOpacity = 1
+            heartYOffset = -6
+            heartScale = 1.0
+        }
+
+        withAnimation(.easeOut(duration: 2.4)) {
+            heartYOffset = -54
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            guard heartEffectID == effectID else { return }
+            withAnimation(.easeIn(duration: 0.9)) {
+                heartOpacity = 0
+                heartScale = 1.08
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            guard heartEffectID == effectID else { return }
+            heartYOffset = 0
+            heartScale = 0.85
         }
     }
 
@@ -736,12 +784,14 @@ struct ContentView: View {
 /// Force Click 시에는 mouseDown → pressureChange(stage2) → mouseUp 순으로 이벤트가 오므로
 /// mouseUp 시점에 forceTriggered 플래그를 확인해 Smile/Touch 를 구분합니다.
 struct InteractionOverlay: NSViewRepresentable {
+    var activeHeight: CGFloat
     var onLightPress: (Bool) -> Void
     var onForcePress: (Bool) -> Void
     var onRightClick: () -> Void
 
     func makeNSView(context: Context) -> PressView {
         let v = PressView()
+        v.activeHeight = activeHeight
         v.onLightPress = onLightPress
         v.onForcePress = onForcePress
         v.onRightClick = onRightClick
@@ -749,6 +799,7 @@ struct InteractionOverlay: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: PressView, context: Context) {
+        nsView.activeHeight = activeHeight
         nsView.onLightPress = onLightPress
         nsView.onForcePress = onForcePress
         nsView.onRightClick = onRightClick
@@ -757,6 +808,7 @@ struct InteractionOverlay: NSViewRepresentable {
     // MARK: -
 
     final class PressView: NSView {
+        var activeHeight: CGFloat = 0
         var onLightPress: ((Bool) -> Void)?
         var onForcePress: ((Bool) -> Void)?
         var onRightClick: (() -> Void)?
@@ -766,6 +818,11 @@ struct InteractionOverlay: NSViewRepresentable {
         private var pressStartedOnLeftHalf = true
 
         override var acceptsFirstResponder: Bool { true }
+
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            guard isPointInInteractiveArea(point) else { return nil }
+            return super.hitTest(point)
+        }
 
         /// 눌림 시작 — 아직 Smile/Touch 를 결정하지 않음
         override func mouseDown(with event: NSEvent) {
@@ -796,6 +853,11 @@ struct InteractionOverlay: NSViewRepresentable {
         private func isLeftHalf(for event: NSEvent) -> Bool {
             let localPoint = convert(event.locationInWindow, from: nil)
             return localPoint.x < bounds.width / 2
+        }
+
+        private func isPointInInteractiveArea(_ point: NSPoint) -> Bool {
+            let interactiveMaxY = min(bounds.height, activeHeight)
+            return point.y <= interactiveMaxY
         }
     }
 }

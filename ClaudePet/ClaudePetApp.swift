@@ -15,6 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         static let spriteScale: CGFloat = 3.0
         static let baseSpriteSize: CGFloat = 32.0
         static let bottomMargin: CGFloat = -10.0
+        static let topEffectHeadroomRatio: CGFloat = 1.3
     }
 
     var overlayWindow: NSWindow?
@@ -24,7 +25,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // ✏️ 창 크기 — 스프라이트 1프레임(32px) 기준, 원하는 배율로 조절
         let spriteSize = Layout.baseSpriteSize * Layout.spriteScale
-        let size = CGSize(width: spriteSize, height: spriteSize)
+        let effectHeadroom = spriteSize * Layout.topEffectHeadroomRatio
+        let size = CGSize(width: spriteSize, height: spriteSize + effectHeadroom)
 
         // ✏️ Y 위치 조절 (화면 하단에서 올라오는 거리, px)
         let origin = CGPoint(
