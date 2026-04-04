@@ -62,6 +62,7 @@ struct ContentView: View {
     @State private var walkTimer: Timer?
     @State private var walkDirection: CGFloat = 0        // +1 오른쪽, -1 왼쪽
     @State private var walkDistanceRemaining: CGFloat = 0
+    @State private var preferredWalkDirection: CGFloat?
 
     // 마우스 흔들기 추적용
     @State private var mouseLog: [(time: Date, x: CGFloat)] = []
@@ -120,8 +121,8 @@ struct ContentView: View {
                 // 세게 누름(Force Click)      → Idle_Touch
                 // 우클릭(두 손가락 클릭)       → Idle_Jumping
                 InteractionOverlay(
-                    onLightPress: { handleTap() },
-                    onForcePress: { handleForcePress() },
+                    onLightPress: { _ in handleTap() },
+                    onForcePress: { isLeftHalf in handleForcePress(isLeftHalf: isLeftHalf) },
                     onRightClick: { handleRightClick() }
                 )
             }
@@ -246,7 +247,8 @@ struct ContentView: View {
     }
 
     /// 세게 누름 (Force Click) → 조건 없이 즉시 Idle_Touch 실행 + 좌우 흔들기 + 강한 햅틱 4회
-    private func handleForcePress() {
+    private func handleForcePress(isLeftHalf: Bool) {
+        preferredWalkDirection = isLeftHalf ? 1.0 : -1.0
         triggerStrongHaptics()
         // 스프라이트 전환을 현재 틱에 먼저 커밋
         switchAnimation(to: .idleTouch)
@@ -322,7 +324,7 @@ struct ContentView: View {
 
     // MARK: - Touch_Walk 이동
 
-    /// idleTouchWalk 진입 시 호출 — 랜덤 방향으로 최대 300px 이동 후 Default 복귀
+    /// idleTouchWalk 진입 시 호출 — 마지막 Force Click 위치를 우선 반영해 이동
     private func startWalkMovement() {
         // 현재 창 위치 기준으로 이동 가능한 방향 결정
         guard let window = overlayWindow else { return }
@@ -335,8 +337,28 @@ struct ContentView: View {
         let canGoRight = currentX < maxX - 1
         let canGoLeft  = currentX > minX + 1
 
-        if canGoRight && canGoLeft {
-            // 양쪽 모두 가능 → 랜덤
+        let requestedDirection = preferredWalkDirection
+        preferredWalkDirection = nil
+
+        if let requestedDirection {
+            if requestedDirection > 0, canGoRight {
+                walkDirection = 1.0
+            } else if requestedDirection < 0, canGoLeft {
+                walkDirection = -1.0
+            } else if canGoRight {
+                walkDirection = 1.0
+            } else if canGoLeft {
+                walkDirection = -1.0
+            } else {
+                DispatchQueue.main.async {
+                    guard animationState == .idleTouchWalk else { return }
+                    isInTransition = false
+                    switchAnimation(to: .idleDefault)
+                }
+                return
+            }
+        } else if canGoRight && canGoLeft {
+            // 방향 힌트가 없으면 기존처럼 랜덤
             walkDirection = Bool.random() ? 1.0 : -1.0
         } else if canGoRight {
             walkDirection = 1.0
@@ -714,8 +736,8 @@ struct ContentView: View {
 /// Force Click 시에는 mouseDown → pressureChange(stage2) → mouseUp 순으로 이벤트가 오므로
 /// mouseUp 시점에 forceTriggered 플래그를 확인해 Smile/Touch 를 구분합니다.
 struct InteractionOverlay: NSViewRepresentable {
-    var onLightPress: () -> Void
-    var onForcePress: () -> Void
+    var onLightPress: (Bool) -> Void
+    var onForcePress: (Bool) -> Void
     var onRightClick: () -> Void
 
     func makeNSView(context: Context) -> PressView {
@@ -735,31 +757,33 @@ struct InteractionOverlay: NSViewRepresentable {
     // MARK: -
 
     final class PressView: NSView {
-        var onLightPress: (() -> Void)?
-        var onForcePress: (() -> Void)?
+        var onLightPress: ((Bool) -> Void)?
+        var onForcePress: ((Bool) -> Void)?
         var onRightClick: (() -> Void)?
 
         /// Force Click 발생 여부 — mouseDown 마다 초기화
         private var forceTriggered = false
+        private var pressStartedOnLeftHalf = true
 
         override var acceptsFirstResponder: Bool { true }
 
         /// 눌림 시작 — 아직 Smile/Touch 를 결정하지 않음
         override func mouseDown(with event: NSEvent) {
             forceTriggered = false
+            pressStartedOnLeftHalf = isLeftHalf(for: event)
         }
 
         /// 압력 변화 — stage 2 (Force Click) 도달 시 Touch 즉시 트리거
         override func pressureChange(with event: NSEvent) {
             guard event.stage == 2, !forceTriggered else { return }
             forceTriggered = true
-            onForcePress?()
+            onForcePress?(pressStartedOnLeftHalf)
         }
 
         /// 손 뗌 — Force Click 없었으면 Smile 트리거
         override func mouseUp(with event: NSEvent) {
             if !forceTriggered {
-                onLightPress?()
+                onLightPress?(pressStartedOnLeftHalf)
             }
             forceTriggered = false
         }
@@ -767,6 +791,11 @@ struct InteractionOverlay: NSViewRepresentable {
         /// 우클릭 (두 손가락 클릭) — Jumping 트리거
         override func rightMouseUp(with event: NSEvent) {
             onRightClick?()
+        }
+
+        private func isLeftHalf(for event: NSEvent) -> Bool {
+            let localPoint = convert(event.locationInWindow, from: nil)
+            return localPoint.x < bounds.width / 2
         }
     }
 }
