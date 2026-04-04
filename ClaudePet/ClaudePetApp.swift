@@ -11,31 +11,35 @@ struct ClaudePetApp: App {
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    var overlayWindow: NSWindow!
+    private enum Layout {
+        static let spriteScale: CGFloat = 3.0
+        static let baseSpriteSize: CGFloat = 32.0
+        static let bottomMargin: CGFloat = -10.0
+    }
+
+    var overlayWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let screen = NSScreen.main!
+        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
 
         // ✏️ 창 크기 — 스프라이트 1프레임(32px) 기준, 원하는 배율로 조절
-        let spriteScale: CGFloat = 3.0           // ← 표시 배율 (1.0 = 32px, 2.0 = 64px, 3.0 = 96px …)
-        let spriteSize: CGFloat = 32 * spriteScale
+        let spriteSize = Layout.baseSpriteSize * Layout.spriteScale
         let size = CGSize(width: spriteSize, height: spriteSize)
 
         // ✏️ Y 위치 조절 (화면 하단에서 올라오는 거리, px)
-        let bottomMargin: CGFloat = -10          // ← 음수일수록 캐릭터가 더 아래로
-
         let origin = CGPoint(
-            x: screen.frame.width - size.width,   // 오른쪽 끝
-            y: bottomMargin
+            x: screen.visibleFrame.maxX - size.width,
+            y: Layout.bottomMargin
         )
 
-        overlayWindow = NSWindow(
+        let overlayWindow = NSWindow(
             contentRect: NSRect(origin: origin, size: size),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
 
+        self.overlayWindow = overlayWindow
         overlayWindow.backgroundColor = .clear
         overlayWindow.isOpaque = false
         overlayWindow.hasShadow = false

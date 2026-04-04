@@ -3,119 +3,6 @@ import AppKit
 import Darwin
 
 struct ContentView: View {
-
-    // MARK: - 애니메이션 상태 정의
-    private enum AnimationState {
-        case idleDefault
-        case idleSmile
-        case idleBoring
-        case idleJumping
-        case idleWalk           // 미사용 (추후 드래그 이동 연동 예정)
-        case idleTouch
-        case idleTouchWalk
-        case idleWorkingPrepare
-        case idleWorking
-    }
-
-    // MARK: - 프레임 크기
-    private let frameSize: CGFloat = 32   // ← 스프라이트 한 프레임 크기 (px)
-
-    // MARK: ─────────────────────────────────────────────────────────────
-    //  각 애니메이션 프레임별 지속 시간 (밀리초 단위, Double)
-    //  아래 숫자만 바꾸면 해당 프레임 속도가 변경됩니다.
-    // ─────────────────────────────────────────────────────────────────
-
-    // ── Idle_Default (4 frames) ──────────────────────────────────────
-    private let idleDefaultFrameMs: [Double] = [
-        500,    // 프레임 0 — ms
-        100,    // 프레임 1 — ms
-        100,    // 프레임 2 — ms
-        100,    // 프레임 3 — ms
-    ]
-
-    // ── Idle_Smile (4 frames) ────────────────────────────────────────
-    private let idleSmileFrameMs: [Double] = [
-        500,    // 프레임 0 — ms
-        100,    // 프레임 1 — ms
-        100,    // 프레임 2 — ms
-        100,    // 프레임 3 — ms
-    ]
-
-    // ── Idle_Boring (4 frames) ───────────────────────────────────────
-    private let idleBoringFrameMs: [Double] = [
-        500,    // 프레임 0 — ms
-        100,    // 프레임 1 — ms
-        100,    // 프레임 2 — ms
-        100,    // 프레임 3 — ms
-    ]
-
-    // ── Idle_Jumping (7 frames) ──────────────────────────────────────
-    private let idleJumpingFrameMs: [Double] = [
-        1,     // 프레임 0 — ms
-        80,     // 프레임 1 — ms
-        80,     // 프레임 2 — ms
-        80,     // 프레임 3 — ms
-        80,     // 프레임 4 — ms
-        80,     // 프레임 5 — ms
-        80,     // 프레임 6 — ms
-    ]
-
-    // ── Idle_Walk (4 frames) — 미사용 ───────────────────────────────
-    private let idleWalkFrameMs: [Double] = [
-        30,    // 프레임 0 — ms
-        30,    // 프레임 1 — ms
-        30,    // 프레임 2 — ms
-        30,    // 프레임 3 — ms
-    ]
-
-    // ── Idle_Touch (5 frames) ────────────────────────────────────────
-    private let idleTouchFrameMs: [Double] = [
-        1,    // 프레임 0 — ms
-        60,    // 프레임 1 — ms
-        60,    // 프레임 2 — ms
-        60,    // 프레임 3 — ms
-        60,    // 프레임 4 — ms
-    ]
-
-    // ── Idle_Touch_Walk (4 frames) ───────────────────────────────────
-    private let idleTouchWalkFrameMs: [Double] = [
-        100,    // 프레임 0 — ms
-        100,    // 프레임 1 — ms
-        100,    // 프레임 2 — ms
-        100,    // 프레임 3 — ms
-    ]
-
-    // ── Idle_Working_Prepare (17 frames) ─────────────────────────────
-    private let idleWorkingPrepareFrameMs: [Double] = [
-        1,     // 프레임 0 — ms
-        70,     // 프레임 1 — ms
-        70,     // 프레임 2 — ms
-        80,     // 프레임 3 — ms
-        80,     // 프레임 4 — ms
-        80,     // 프레임 5 — ms
-        80,     // 프레임 6 — ms
-        70,     // 프레임 7 — ms
-        70,     // 프레임 8 — ms
-        50,     // 프레임 9 — ms
-        50,     // 프레임 10 — ms
-        150,     // 프레임 11 — ms
-        300,     // 프레임 12 — ms
-        80,     // 프레임 13 — ms
-        80,     // 프레임 14 — ms
-        80,     // 프레임 15 — ms
-        500,     // 프레임 16 — ms
-    ]
-
-    // ── Idle_Working (6 frames) ──────────────────────────────────────
-    private let idleWorkingFrameMs: [Double] = [
-        30,    // 프레임 0 — ms
-        30,    // 프레임 1 — ms
-        30,    // 프레임 2 — ms
-        30,    // 프레임 3 — ms
-        30,    // 프레임 4 — ms
-        30,    // 프레임 5 — ms
-    ]
-
     // MARK: ─────────────────────────────────────────────────────────────
     //  랜덤 인터럽트 설정
     // ─────────────────────────────────────────────────────────────────
@@ -158,7 +45,7 @@ struct ContentView: View {
     private let idleConfirmCount:    Int    = 3     // ← Idle 복귀 연속 횟수
 
     // MARK: - @State
-    @State private var animationState: AnimationState = .idleDefault
+    @State private var animationState: PetAnimationState = .idleDefault
     @State private var currentFrame: Int = 0
     @State private var currentRepeat: Int = 0           // 전환 재생 반복 누적
 
@@ -167,6 +54,7 @@ struct ContentView: View {
     @State private var touchWalkTimeoutItem: DispatchWorkItem?
     @State private var mouseMonitor: Any?
     @State private var workspaceObserver: Any?
+    @State private var terminateObserver: Any?
     @State private var activateObserver: Any?
     @State private var isWorkAppActive: Bool = false  // 작업 앱이 포그라운드인지 여부
 
@@ -198,47 +86,10 @@ struct ContentView: View {
     // (더블탭 감지 제거됨 — 우클릭으로 Jumping 이동)
 
     // MARK: - 상태별 이미지명·프레임ms 매핑
-    private var imageName: String {
-        switch animationState {
-        case .idleDefault:        return "Idle_Default"
-        case .idleSmile:          return "Idle_Smile"
-        case .idleBoring:         return "Idle_Boring"
-        case .idleJumping:        return "Idle_Jumping"
-        case .idleWalk:           return "Idle_Walk"
-        case .idleTouch:          return "Idle_Touch"
-        case .idleTouchWalk:      return "Idle_Touch_Walk"
-        case .idleWorkingPrepare: return "Idle_Working_Prepare"
-        case .idleWorking:        return "Idle_Working"
-        }
-    }
-
-    private var frameMs: [Double] {
-        switch animationState {
-        case .idleDefault:        return idleDefaultFrameMs
-        case .idleSmile:          return idleSmileFrameMs
-        case .idleBoring:         return idleBoringFrameMs
-        case .idleJumping:        return idleJumpingFrameMs
-        case .idleWalk:           return idleWalkFrameMs
-        case .idleTouch:          return idleTouchFrameMs
-        case .idleTouchWalk:      return idleTouchWalkFrameMs
-        case .idleWorkingPrepare: return idleWorkingPrepareFrameMs
-        case .idleWorking:        return idleWorkingFrameMs
-        }
-    }
+    private var imageName: String { animationState.assetName }
+    private var frameMs: [Double] { animationState.frameDurationsMs }
 
     private var frameCount: Int { frameMs.count }
-
-    // 전환 재생 설정: (전환재생여부, 반복횟수, 완료 후 다음 상태)
-    private func transitionConfig(for state: AnimationState) -> (Bool, Int, AnimationState) {
-        switch state {
-        case .idleSmile:          return (true, 2, .idleDefault)
-        case .idleBoring:         return (true, 2, .idleDefault)
-        case .idleJumping:        return (true, 1, .idleDefault)
-        case .idleTouch:          return (true, 1, .idleTouchWalk)
-        case .idleWorkingPrepare: return (true, 1, .idleWorking)
-        default:                  return (false, 0, .idleDefault)
-        }
-    }
 
     // MARK: - View Body
     var body: some View {
@@ -291,7 +142,7 @@ struct ContentView: View {
     // MARK: - 애니메이션 엔진
 
     /// 상태를 전환하고 첫 프레임부터 재생 시작
-    private func switchAnimation(to state: AnimationState) {
+    private func switchAnimation(to state: PetAnimationState) {
         workItem?.cancel()
         touchWalkTimeoutItem?.cancel()
         walkTimer?.invalidate()
@@ -301,8 +152,7 @@ struct ContentView: View {
         currentFrame   = 0
         currentRepeat  = 0
 
-        let (isTransition, _, _) = transitionConfig(for: state)
-        isInTransition = isTransition
+        isInTransition = state.transition.isTransition
 
         if state == .idleTouchWalk {
             startWalkMovement()
@@ -323,15 +173,15 @@ struct ContentView: View {
             guard animationState == capturedState else { return }
 
             let nextFrame = currentFrame + 1
-            let (isTransition, repeatCount, nextState) = transitionConfig(for: animationState)
+            let transition = animationState.transition
 
             if nextFrame >= frameCount {
                 // ── 사이클 1회 완료 ──────────────────────────────────
-                if isTransition {
+                if transition.isTransition {
                     let newRepeat = currentRepeat + 1
-                    if newRepeat >= repeatCount {
+                    if newRepeat >= transition.repeatCount {
                         // 지정 횟수 재생 완료 → 다음 상태로 전환
-                        switchAnimation(to: nextState)
+                        switchAnimation(to: transition.nextState)
                     } else {
                         // 아직 더 반복해야 함
                         currentRepeat = newRepeat
@@ -359,7 +209,7 @@ struct ContentView: View {
     /// 살짝 누름 (일반 클릭) → Idle_Smile + 눌린 스케일 애니메이션
     private func handleTap() {
         guard !isInTransition else { return }
-        guard animationState == .idleDefault || animationState == .idleWorking else { return }
+        guard animationState.isPrimaryInteractionState else { return }
 
         triggerHaptic()
         applyPressScale()
@@ -377,7 +227,7 @@ struct ContentView: View {
             return
         }
         guard !isInTransition else { return }
-        guard animationState == .idleDefault || animationState == .idleWorking else { return }
+        guard animationState.isPrimaryInteractionState else { return }
         triggerHaptic()
         applyPressScale()
         switchAnimation(to: .idleJumping)
@@ -467,7 +317,7 @@ struct ContentView: View {
         if animationState == .idleTouchWalk { return }
         guard !isInTransition, animationState == .idleDefault else { return }
         switchAnimation(to: .idleTouch)
-        // Touch → Touch_Walk 전환은 transitionConfig에 의해 자동 처리됨
+        // Touch → Touch_Walk 전환은 PetAnimationState.transition 규칙으로 자동 처리됨
     }
 
     // MARK: - Touch_Walk 이동
@@ -475,9 +325,7 @@ struct ContentView: View {
     /// idleTouchWalk 진입 시 호출 — 랜덤 방향으로 최대 300px 이동 후 Default 복귀
     private func startWalkMovement() {
         // 현재 창 위치 기준으로 이동 가능한 방향 결정
-        guard let window = NSApplication.shared.windows.first(
-            where: { $0.styleMask.contains(.borderless) && $0.level == .floating }
-        ) else { return }
+        guard let window = overlayWindow else { return }
 
         let screen     = NSScreen.main ?? NSScreen.screens[0]
         let currentX   = window.frame.origin.x
@@ -515,9 +363,7 @@ struct ContentView: View {
                 return
             }
 
-            guard let window = NSApplication.shared.windows.first(
-                where: { $0.styleMask.contains(.borderless) && $0.level == .floating }
-            ) else {
+            guard let window = overlayWindow else {
                 timer.invalidate()
                 return
             }
@@ -551,7 +397,7 @@ struct ContentView: View {
     /// Touch_Walk 무한 루프 중 흔들기가 멈추면 Idle_Default로 복귀
     private func scheduleTouchWalkTimeout() {
         // idleTouch 전환 재생이 끝나야 Touch_Walk가 시작되므로 여유 시간 추가
-        let touchDuration = idleTouchFrameMs.reduce(0, +) / 1000.0
+        let touchDuration = PetAnimationState.idleTouch.frameDurationsMs.reduce(0, +) / 1000.0
         DispatchQueue.main.asyncAfter(deadline: .now() + touchDuration) {
             resetTouchWalkTimeout()
         }
@@ -594,7 +440,7 @@ struct ContentView: View {
         }
 
         // 앱 종료 알림 — Claude가 꺼졌을 때
-        nc.addObserver(
+        terminateObserver = nc.addObserver(
             forName: NSWorkspace.didTerminateApplicationNotification,
             object: nil,
             queue: .main
@@ -674,7 +520,7 @@ struct ContentView: View {
     /// 다른 앱이 포그라운드로 전환됐을 때 호출 — 작업 앱이 백그라운드로 이동
     private func handleWorkAppDeactivated() {
         isWorkAppActive = false
-        guard animationState == .idleWorking || animationState == .idleWorkingPrepare else { return }
+        guard animationState.isWorkingState else { return }
         isInTransition = false
         switchAnimation(to: .idleDefault)
     }
@@ -686,7 +532,7 @@ struct ContentView: View {
         belowThresholdCount  = 0
         lastCPUNanos         = 0
         // Working 중이면 즉시 Idle_Default로 복귀
-        guard animationState == .idleWorking || animationState == .idleWorkingPrepare else { return }
+        guard animationState.isWorkingState else { return }
         isInTransition = false
         switchAnimation(to: .idleDefault)
     }
@@ -781,8 +627,7 @@ struct ContentView: View {
     /// 충격 감지 시 호출 — Idle_Touch 트리거
     private func handleAccelerometerHit() {
         guard !isInTransition else { return }
-        guard animationState == .idleDefault ||
-              animationState == .idleWorking else { return }
+        guard animationState.isPrimaryInteractionState else { return }
 
         triggerHaptic()
         switchAnimation(to: .idleTouch)
@@ -848,7 +693,14 @@ struct ContentView: View {
         if let m = mouseMonitor { NSEvent.removeMonitor(m) }
         let nc = NSWorkspace.shared.notificationCenter
         if let o = workspaceObserver { nc.removeObserver(o) }
+        if let o = terminateObserver { nc.removeObserver(o) }
         if let o = activateObserver  { nc.removeObserver(o) }
+    }
+
+    private var overlayWindow: NSWindow? {
+        NSApplication.shared.windows.first(
+            where: { $0.styleMask.contains(.borderless) && $0.level == .floating }
+        )
     }
 }
 
