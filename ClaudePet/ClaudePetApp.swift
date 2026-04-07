@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import ApplicationServices
 
 @main
 struct ClaudePetApp: App {
@@ -16,6 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         static let baseSpriteSize: CGFloat      = 32.0
         static let bottomMargin: CGFloat        = -10.0   // ← 하단 여백 (음수 = 독 아래로 숨김)
         static let topEffectHeadroomRatio: CGFloat = 1.3
+        static let counterHeight: CGFloat       = 32.0   // ← 타이핑 카운터 영역 높이 (px)
 
         // 대사 전용 패널 설정
         static let dialogueWidth: CGFloat       = 180.0   // ← 대사 박스 최대 너비 (px)
@@ -25,8 +27,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var overlayWindow: NSWindow?
     var dialoguePanel: NSPanel?
+    var counterPanel:  NSPanel?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+
+        // ─── 손쉬운 사용 권한 확인 ────────────────────────────────────────────
+        // 권한이 없으면 시스템 설정 > 개인 정보 보호 > 손쉬운 사용 창을 자동으로 열고
+        // ClaudePet 항목을 강조해줍니다. (빌드 후 매번 수동 추가 불필요)
+        AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary)
+
         guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
 
         // ─── 스프라이트 메인 창 ───────────────────────────────────────────
@@ -34,9 +43,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let effectHeadroom = spriteSize * Layout.topEffectHeadroomRatio          // ~124.8 px
         let size           = CGSize(width: spriteSize, height: spriteSize + effectHeadroom)
 
+        // 카운터 패널이 스프라이트 바로 아래에 위치하므로 스프라이트 창을 counterHeight 만큼 위로 올림
         let origin = CGPoint(
             x: screen.visibleFrame.maxX - size.width,
-            y: Layout.bottomMargin
+            y: Layout.counterHeight                                              // 카운터 패널(0~counterHeight) 바로 위
         )
 
         let overlayWindow = NSWindow(
@@ -91,5 +101,48 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // 스프라이트 창의 자식으로 등록 → 이동 시 자동으로 함께 이동
         overlayWindow.addChildWindow(panel, ordered: .above)
+
+        // ─── 타이핑 카운터 패널 (대사 패널과 동일한 독립 레이어 구조) ─────
+        //
+        // • 스프라이트 창 바로 아래(y: 0 ~ counterHeight)에 위치
+        // • ignoresMouseEvents = true → 클릭이 완전히 통과됩니다
+        // • addChildWindow           → 창 이동 시 스프라이트와 함께 이동
+        let counterRect = NSRect(
+            x: origin.x,
+            y: 0,                                                                // 화면 최하단
+            width: spriteSize,
+            height: Layout.counterHeight
+        )
+
+        let counter = NSPanel(
+            contentRect: counterRect,
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+        self.counterPanel = counter
+        counter.backgroundColor    = .clear
+        counter.isOpaque           = false
+        counter.hasShadow          = false
+        counter.level              = .floating
+        counter.ignoresMouseEvents = true
+        counter.collectionBehavior = [.canJoinAllSpaces, .stationary]
+        counter.contentView        = NSHostingView(rootView: CounterWindowContent())
+
+        overlayWindow.addChildWindow(counter, ordered: .above)
+    }
+}
+
+// MARK: - 타이핑 카운터 패널 콘텐츠
+
+struct CounterWindowContent: View {
+    @AppStorage("typingCount") private var typingCount: Int = 0
+
+    var body: some View {
+        Text(typingCount.formatted(.number))
+            .font(.system(size: 9, weight: .medium, design: .monospaced))
+            .foregroundColor(.white.opacity(0.85))
+            .shadow(color: .black.opacity(0.6), radius: 1, x: 0, y: 1)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

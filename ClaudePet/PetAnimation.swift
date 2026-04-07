@@ -46,7 +46,7 @@ enum PetAnimationState {
         case .idleJumping:
             return [1, 80, 80, 80, 80, 80, 80]
         case .idleWalk:
-            return [30, 30, 30, 30]
+            return [70, 70, 70, 70]
         case .idleTouch:
             return [1, 60, 60, 60, 60]
         case .idleTouchWalk:
