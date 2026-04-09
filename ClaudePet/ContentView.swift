@@ -8,9 +8,7 @@ struct ContentView: View {
 
     @StateObject private var controller = AnimationController()
 
-    // MARK: - 타이핑 카운터 (앱 종료 후에도 유지)
-
-    @AppStorage("typingCount") private var typingCount: Int = 0
+    // MARK: - 타이핑 카운터 (TypingCounter 싱글톤으로 관리)
 
     // MARK: - 모니터링 상태 (@State 는 라이프사이클 전용)
 
@@ -21,8 +19,12 @@ struct ContentView: View {
     @State private var terminateObserver: Any?
     @State private var activateObserver:  Any?
     @State private var workingDialogueTimer: Timer?
+    @State private var hungerDialogueTimer:  Timer?
     @State private var cpuTimer:          Timer?
     @State private var accelDetector:     AccelerometerDetector?
+
+    // 배고픔 관찰 (isHungry 변화 감지)
+    @ObservedObject private var hungerManager = HungerManager.shared
 
     // CPU 모니터 내부 상태
     @State private var isClaudeRunning:      Bool   = false
@@ -98,7 +100,24 @@ struct ContentView: View {
             setupWorkspaceObserver()
             startCPUMonitor()
             controller.startMouseFollowDetection()
+            HungerManager.shared.startHungerTimer()
+            // 시작 시 이미 배고픈 상태이면 즉시 진입
+            if HungerManager.shared.isHungry {
+                controller.handleHungerBecameLow()
+            }
             // startAccelerometerDetection()  // [비활성화됨] AccelerometerDetector.swift 참조
+        }
+        .onChange(of: hungerManager.isHungry) { _, nowHungry in
+            if nowHungry {
+                controller.handleHungerBecameLow()
+                startHungerDialogueTimer()
+            } else {
+                controller.handleHungerRestored()
+                stopHungerDialogueTimer()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .claudePetFed)) { _ in
+            controller.handleFed()
         }
         .onDisappear {
             cleanup()
@@ -115,6 +134,12 @@ struct ContentView: View {
         ) { _ in
             guard !controller.isInTransition,
                   controller.animationState == .idleDefault else { return }
+
+            // idleDefault 복귀 후 배고픔 상태이면 idleHungry 재진입 (최대 6초 지연)
+            if HungerManager.shared.isHungry {
+                controller.handleHungerBecameLow()
+                return
+            }
 
             let roll = Double.random(in: 0..<1)
             let smileEnd   = PetConfig.smileProbability
@@ -144,9 +169,9 @@ struct ContentView: View {
     private func startKeyboardMonitor() {
         // 전역 키 입력 감지 — 어느 앱에서 타이핑해도 카운트됩니다.
         // ※ 시스템 환경설정 > 개인 정보 보호 > 손쉬운 사용 권한 필요
-        keyboardMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { _ in
+        keyboardMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyUp) { _ in
             DispatchQueue.main.async {
-                typingCount += 1
+                TypingCounter.shared.increment()
             }
         }
     }
@@ -277,6 +302,24 @@ struct ContentView: View {
         workingDialogueTimer = nil
     }
 
+    // MARK: - 배고픔 대사 타이머
+
+    private func startHungerDialogueTimer() {
+        hungerDialogueTimer?.invalidate()
+        hungerDialogueTimer = Timer.scheduledTimer(
+            withTimeInterval: PetConfig.hungerDialogueIntervalSec,
+            repeats: true
+        ) { _ in
+            guard controller.animationState == .idleHungry else { return }
+            controller.showDialogue(for: .hungry)
+        }
+    }
+
+    private func stopHungerDialogueTimer() {
+        hungerDialogueTimer?.invalidate()
+        hungerDialogueTimer = nil
+    }
+
     // MARK: - CPU 기반 작업 감지
 
     private func startCPUMonitor() {
@@ -356,6 +399,8 @@ struct ContentView: View {
         randomTimer?.invalidate()
         cpuTimer?.invalidate()
         workingDialogueTimer?.invalidate()
+        hungerDialogueTimer?.invalidate()
+        HungerManager.shared.stopHungerTimer()
         accelDetector?.stop()
         accelDetector = nil
         DialogueManager.shared.hide()

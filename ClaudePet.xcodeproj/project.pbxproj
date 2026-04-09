@@ -256,6 +256,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSInputMonitoringUsageDescription = "타이핑 카운터 기능을 위해 키보드 입력을 감지합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "맥북을 때렸을 때 충격을 감지하기 위해 마이크를 사용합니다.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -287,6 +288,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSInputMonitoringUsageDescription = "타이핑 카운터 기능을 위해 키보드 입력을 감지합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "맥북을 때렸을 때 충격을 감지하기 위해 마이크를 사용합니다.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

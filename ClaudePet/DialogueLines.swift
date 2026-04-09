@@ -19,6 +19,8 @@ enum DialogueTrigger {
     case workingStart   // 작업 앱 포그라운드 → Idle_Working_Prepare
     case working        // Idle_Working 루프 중 (랜덤 간격으로 출력)
     case workingEnd     // 작업 종료 → Idle_Default 복귀
+    case hungry         // 배고픔 수치 20 이하 → Idle_Hungry (힘 없는 느낌)
+    case fed            // 밥 받았을 때 반응
 }
 
 // MARK: - 대사 카탈로그
@@ -106,6 +108,26 @@ struct DialogueCatalog {
             return [
                 "수고하셨어요!!",
                 "고생하셨어요!!",
+            ]
+
+        case .hungry:
+            return [
+                "배고파요...",
+                "밥... 주세요...",
+                "꼬르륵..",
+                "힘이... 없어요..",
+                "밥이 먹고 싶어요..",
+                "조금만.. 주시면 안 되나요..",
+                "으으.. 배고파..",
+            ]
+
+        case .fed:
+            return [
+                "냠냠!! 감사해요~!",
+                "맛있어요!! 헤헤",
+                "고마워요!! 힘 났어요!",
+                "냠냠냠~",
+                "역시 밥이 최고야!",
             ]
         }
     }

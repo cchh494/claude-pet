@@ -20,6 +20,7 @@ enum PetAnimationState {
     case idleTouchWalk
     case idleWorkingPrepare
     case idleWorking
+    case idleHungry
 
     var assetName: String {
         switch self {
@@ -32,6 +33,7 @@ enum PetAnimationState {
         case .idleTouchWalk: return "Idle_Touch_Walk"
         case .idleWorkingPrepare: return "Idle_Working_Prepare"
         case .idleWorking: return "Idle_Working"
+        case .idleHungry: return "Idle_Hungry"
         }
     }
 
@@ -55,6 +57,8 @@ enum PetAnimationState {
             return [1, 70, 70, 80, 80, 80, 80, 70, 70, 50, 50, 150, 300, 80, 80, 80, 500]
         case .idleWorking:
             return [30, 30, 30, 30, 30, 30]
+        case .idleHungry:
+            return [600, 100, 100, 100]   // 4프레임 — 기운 없이 느릿한 리듬
         }
     }
 
@@ -70,13 +74,14 @@ enum PetAnimationState {
             return AnimationTransition(isTransition: true, repeatCount: 1, nextState: .idleTouchWalk)
         case .idleWorkingPrepare:
             return AnimationTransition(isTransition: true, repeatCount: 1, nextState: .idleWorking)
-        case .idleDefault, .idleWalk, .idleTouchWalk, .idleWorking:
+        case .idleDefault, .idleWalk, .idleTouchWalk, .idleWorking, .idleHungry:
             return .none(looping: self)
         }
     }
 
     var isPrimaryInteractionState: Bool {
         self == .idleDefault || self == .idleWorking
+        // idleHungry 는 의도적으로 제외 — 배고픈 상태에서는 탭 반응 없음
     }
 
     var isWorkingState: Bool {

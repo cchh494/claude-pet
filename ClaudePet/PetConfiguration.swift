@@ -48,4 +48,12 @@ enum PetConfig {
     // MARK: - 대사
     static let dialogueDisplaySec:        Double = 3.5    // 대사 표시 지속 시간 (초)
     static let workingDialogueIntervalSec: Double = 12.0  // Working 중 대사 출력 주기 (초)
+
+    // MARK: - 배고픔 (Hunger)
+    static let hungerMax:               Double = 100.0   // 최대 배고픔 수치
+    static let hungerDecayIntervalSec:  Double = 300.0   // 배고픔 1 감소 주기 (초) — 기본 5분
+    static let hungerThreshold:         Double = 20.0    // 배고픔 경보 임계값 (이하 시 Idle_Hungry 진입)
+    static let feedTypingCost:          Int    = 100     // 밥주기 1회 타이핑 카운터 비용
+    static let feedHungerRestore:       Double = 10.0    // 밥주기 1회 배고픔 회복량
+    static let hungerDialogueIntervalSec: Double = 30.0  // 배고픔 상태 대사 출력 주기 (초)
 }

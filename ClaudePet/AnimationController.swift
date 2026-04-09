@@ -133,25 +133,16 @@ final class AnimationController: ObservableObject {
         switchAnimation(to: .idleSmile)
     }
 
-    /// 우클릭(두 손가락 클릭) → Idle_Jumping
+    /// 우클릭(두 손가락 클릭) → 메뉴 HUD 토글
     func handleRightClick() {
-        // Smile 재생 중에는 transition 체크 없이 즉시 실행
-        if animationState == .idleSmile {
-            triggerHaptic()
-            applyPressScale()
-            showDialogue(for: .jumping)
-            switchAnimation(to: .idleJumping)
-            return
-        }
-        guard !isInTransition, animationState.isPrimaryInteractionState else { return }
         triggerHaptic()
-        applyPressScale()
-        showDialogue(for: .jumping)
-        switchAnimation(to: .idleJumping)
+        NotificationCenter.default.post(name: .claudePetToggleMenu, object: nil)
     }
 
     /// 세게 누름(Force Click) → Idle_Touch + 좌우 흔들기
     func handleForcePress(isLeftHalf: Bool) {
+        // 배고픈 상태에서는 꾹누름 반응 없음
+        guard animationState != .idleHungry else { return }
         preferredWalkDirection = isLeftHalf ? 1.0 : -1.0
         triggerStrongHaptics()
         showDialogue(for: .touch)
@@ -214,6 +205,28 @@ final class AnimationController: ObservableObject {
     /// isInTransition 플래그를 외부에서 초기화할 때 사용
     func clearTransitionFlag() {
         isInTransition = false
+    }
+
+    // MARK: - 배고픔 상태 진입/복귀
+
+    /// 배고픔 수치가 임계값 이하로 떨어졌을 때 호출.
+    /// idleDefault / idleWalk 상태에서만 idleHungry 로 전환합니다.
+    func handleHungerBecameLow() {
+        guard !isInTransition else { return }
+        guard animationState == .idleDefault || animationState == .idleWalk else { return }
+        showDialogue(for: .hungry)
+        switchAnimation(to: .idleHungry)
+    }
+
+    /// 밥을 먹어 배고픔이 임계값 초과로 회복됐을 때 호출.
+    func handleHungerRestored() {
+        guard animationState == .idleHungry else { return }
+        switchAnimation(to: .idleDefault)
+    }
+
+    /// 배고픔 상태에서 밥을 받았을 때 호출 — 대사 표시용.
+    func handleFed() {
+        showDialogue(for: .fed)
     }
 
     // MARK: - 대사
@@ -606,4 +619,13 @@ final class AnimationController: ObservableObject {
         mouseFollowResumeItem = nil
         stopMouseFollowDetection()
     }
+}
+
+// MARK: - 알림 이름
+
+extension Notification.Name {
+    /// 우클릭 시 메뉴 HUD를 열고 닫는 알림
+    static let claudePetToggleMenu = Notification.Name("ClaudePet.ToggleMenu")
+    /// 밥주기 성공 시 ContentView 에 대사 출력을 요청하는 알림
+    static let claudePetFed        = Notification.Name("ClaudePet.Fed")
 }
