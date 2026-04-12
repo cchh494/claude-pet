@@ -13,7 +13,7 @@ final class SparkleManager: NSObject {
     func setup() {
         updaterController = SPUStandardUpdaterController(
             startingUpdater: true,
-            updaterDelegate: nil,
+            updaterDelegate: self,
             userDriverDelegate: nil
         )
     }
@@ -22,5 +22,12 @@ final class SparkleManager: NSObject {
     /// Sparkle 이 자체 UI 다이얼로그를 표시합니다.
     func checkForUpdates() {
         updaterController?.checkForUpdates(nil)
+    }
+}
+
+// MARK: - SPUUpdaterDelegate
+extension SparkleManager: SPUUpdaterDelegate {
+    func feedURLString(for updater: SPUUpdater) -> String? {
+        return "https://cchh494.github.io/claude-pet/appcast.xml"
     }
 }

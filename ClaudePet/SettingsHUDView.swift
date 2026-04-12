@@ -165,9 +165,14 @@ struct UpdateCheckRow: View {
                     .foregroundColor(Color(red: 0.40, green: 0.60, blue: 1.00))
             }
 
-            Text("업데이트 확인")
-                .font(.system(size: 12 * s, weight: .medium))
-                .foregroundColor(Color(nsColor: .labelColor))
+            VStack(alignment: .leading, spacing: 2 * s) {
+                Text("업데이트 확인")
+                    .font(.system(size: 12 * s, weight: .medium))
+                    .foregroundColor(Color(nsColor: .labelColor))
+                Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")")
+                    .font(.system(size: 9.5 * s, weight: .regular))
+                    .foregroundColor(Color(nsColor: .tertiaryLabelColor))
+            }
 
             Spacer()
 
