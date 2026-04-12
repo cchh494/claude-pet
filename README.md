@@ -1,2 +1,4 @@
-# claude-pet
-A macOS desktop companion app featuring Claude character with animated states
+# ClaudePet
+나만의 작고 귀여운 반려 클로드를 키워보세요!
+ macOS에서만 작동합니다.
+ 손쉬운 사용 설정에 클로드펫을 활성화 해주세요! 비활성화 시 키보드 타이핑 기능을 사용할 수 없습니다.
