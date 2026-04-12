@@ -12,6 +12,19 @@
              ═══════════════════════════════════════════════════════════════ -->
 
         <item>
+            <title>Version 1.0.3</title>
+            <sparkle:releaseNotesLink>https://github.com/cchh494/claude-pet/releases/tag/v1.0.3</sparkle:releaseNotesLink>
+            <pubDate>Sun, 12 Apr 2026 00:00:00 +0900</pubDate>
+            <sparkle:shortVersionString>1.0.3</sparkle:shortVersionString>
+            <sparkle:version>3</sparkle:version>
+            <enclosure
+                url="https://github.com/cchh494/claude-pet/releases/download/v1.0.3/ClaudePet.zip"
+                sparkle:edSignature="2CEFbTviqQNbIK8OOkeCP5gEVx1UIcLCbP0dgdkYe1UMNoHDBicAZFVZgdSlccz2lv4+9g9ftS3XNvRmejsdAQ=="
+                length="4207079"
+                type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 1.0.0</title>
             <sparkle:releaseNotesLink>https://github.com/cchh494/claude-pet/releases/tag/v1.0.0</sparkle:releaseNotesLink>
             <pubDate>Sat, 12 Apr 2026 00:00:00 +0900</pubDate>
