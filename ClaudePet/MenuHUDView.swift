@@ -230,7 +230,7 @@ struct MenuHUDView: View {
                 Spacer()
                 HUDIconButton(
                     systemName: "arrow.clockwise.circle",
-                    tooltip:    "업데이트 확인",
+                    tooltip:    "업데이트 확인\n현재 버전: v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")",
                     scale:      s,
                     action: {
                         SparkleManager.shared.checkForUpdates()
