@@ -11,6 +11,19 @@
              sparkle:edSignature 값은 sign_update 도구로 생성합니다.
              ═══════════════════════════════════════════════════════════════ -->
         <item>
+            <title>Version 1.0.12</title>
+            <sparkle:releaseNotesLink>https://github.com/cchh494/claude-pet/releases/tag/v1.0.12</sparkle:releaseNotesLink>
+            <pubDate>Tue, 14 Apr 2026 23:00:00 +0900</pubDate>
+            <sparkle:shortVersionString>1.0.12</sparkle:shortVersionString>
+            <sparkle:version>12</sparkle:version>
+            <enclosure
+                url="https://github.com/cchh494/claude-pet/releases/download/v1.0.12/ClaudePet.zip"
+                sparkle:edSignature="wMEY1NN1StjKI0gfsWfEXdMTx6lznNMufm8mWw4FRFKWeTkRwkYjPxZvbKiK3Gx0CuIuNlMDYaWDr0tI+xaoAA=="
+                length="4210691"
+                type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 1.0.11</title>
             <sparkle:releaseNotesLink>https://github.com/cchh494/claude-pet/releases/tag/v1.0.11</sparkle:releaseNotesLink>
             <pubDate>Tue, 14 Apr 2026 00:00:00 +0900</pubDate>
