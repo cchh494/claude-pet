@@ -7,4 +7,6 @@
 
 [ClaudePet 1.0.18 DMG 다운로드](https://github.com/cchh494/claude-pet/releases/download/v1.0.18/ClaudePet-1.0.18.dmg)
 
-처음 설치하는 사용자는 DMG 파일을 내려받아 `ClaudePet.app`을 Applications 폴더로 옮겨주세요.
+처음 설치하는 사용자는 DMG 파일을 내려받아 `ClaudePet.app`을 Applications 폴더로 옮겨주세요!
+<img width="1096" height="388" alt="image" src="https://github.com/user-attachments/assets/ee877a97-6922-4e23-93d6-09276177e3b0" />
+
