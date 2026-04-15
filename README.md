@@ -22,3 +22,13 @@
 앱 실행 후 손쉬운 사용 안내가 떠요. 응용프로그램 폴더에서 손쉬운 사용 설정 창으로 드래그 해주세요!
 <img width="1432" height="1598" alt="image" src="https://github.com/user-attachments/assets/201fb2d4-d06e-4105-b064-48fb54a262bc" />
 
+## 처음 실행할 때 열리지 않는 경우
+
+ClaudePet은 Apple Developer Program 공증 없이 배포되고 있어서, 처음 실행할 때 macOS 보안 안내가 뜰 수 있습니다. 앱을 Applications 폴더로 옮긴 뒤 터미널에서 아래 명령을 한 번만 실행해 주세요.
+
+```bash
+xattr -dr com.apple.quarantine /Applications/ClaudePet.app
+open /Applications/ClaudePet.app
+```
+
+이후부터는 일반 앱처럼 실행할 수 있습니다.
