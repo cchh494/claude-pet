@@ -13,13 +13,13 @@
         <item>
             <title>Version 1.0.15</title>
             <sparkle:releaseNotesLink>https://github.com/cchh494/claude-pet/releases/tag/v1.0.15</sparkle:releaseNotesLink>
-            <pubDate>Wed, 15 Apr 2026 16:33:45 +0900</pubDate>
+            <pubDate>Wed, 15 Apr 2026 16:35:00 +0900</pubDate>
             <sparkle:shortVersionString>1.0.15</sparkle:shortVersionString>
             <sparkle:version>15</sparkle:version>
             <enclosure
                 url="https://github.com/cchh494/claude-pet/releases/download/v1.0.15/ClaudePet.zip"
-                sparkle:edSignature="OmDVzuieIUIhKrL+RzVWiBqQuwohrmQsGcQTI61vstQyNI83nfo7p4d3q5bMKH+u+lln12wRlYmOczFS8u4FAA=="
-                length="4127504"
+                sparkle:edSignature="UsGLxjjeyMmLYvbzN+Cqx9A8ulJlVrpJNG5pqDZbYT/olTw83yGHFN7Mb/fHVAmebFcr8/NVx5arAWe2XS/sBQ=="
+                length="4192329"
                 type="application/octet-stream"/>
         </item>
 
