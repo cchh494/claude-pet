@@ -60,3 +60,18 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Local working assets
+Asset/
+*.ase
+*.aseprite
+
+# Local release helpers and private docs
+release_*.sh
+md/
+docs/*
+!docs/appcast.xml
