@@ -18,10 +18,6 @@
 처음 설치하는 사용자는 DMG 파일을 내려받아 `ClaudePet.app`을 Applications 폴더로 옮겨주세요!
 <img width="1096" height="388" alt="image" src="https://github.com/user-attachments/assets/ee877a97-6922-4e23-93d6-09276177e3b0" />
 
-## 손쉬운 사용을 설정 해주세요! (타이핑 카운터 용)
-앱 실행 후 손쉬운 사용 안내가 떠요. 응용프로그램 폴더에서 손쉬운 사용 설정 창으로 드래그 해주세요!
-<img width="1432" height="1598" alt="image" src="https://github.com/user-attachments/assets/201fb2d4-d06e-4105-b064-48fb54a262bc" />
-
 ## 처음 실행할 때 열리지 않는 경우
 
 ClaudePet은 Apple Developer Program 공증 없이 배포되고 있어서, 처음 실행할 때 macOS 보안 안내가 뜰 수 있습니다. 앱을 Applications 폴더로 옮긴 뒤 터미널에서 아래 명령을 한 번만 실행해 주세요.
@@ -32,3 +28,8 @@ open /Applications/ClaudePet.app
 ```
 
 이후부터는 일반 앱처럼 실행할 수 있습니다.
+
+## 손쉬운 사용을 설정 해주세요! (타이핑 카운터 용)
+앱 실행 후 손쉬운 사용 안내가 떠요. 응용프로그램 폴더에서 손쉬운 사용 설정 창으로 드래그 해주세요!
+<img width="1432" height="1598" alt="image" src="https://github.com/user-attachments/assets/201fb2d4-d06e-4105-b064-48fb54a262bc" />
+
